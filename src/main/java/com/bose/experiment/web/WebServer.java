@@ -65,10 +65,12 @@ public class WebServer extends AbstractVerticle {
             sendError(404, 10001, response);
         if (reading == null)
             sendError(404, 10002, response);
-        UUID id = UUID.randomUUID();
-        reading.put("id", id.toString());
-        System.out.println("Server u:[" + userId + "] id:[" + id.toString() + "] r:\n" + reading.encodePrettily());
-        readings.put(id.toString(), reading);
+        if (!reading.containsKey("id")) {
+            UUID id = UUID.randomUUID();
+            reading.put("id", id.toString());
+            System.out.println("Server u:[" + userId + "] id:[" + id.toString() + "] r:\n" + reading.encodePrettily());
+        }
+        readings.put(reading.getString("id"), reading);
         response.putHeader("content-type", "application/json")
                 .end(reading.encodePrettily());
     }

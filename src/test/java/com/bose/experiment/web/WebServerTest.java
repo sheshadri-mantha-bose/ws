@@ -12,6 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.UUID;
+
 /**
  * Created by sm1030414 on 12/23/2016.
  */
@@ -23,6 +25,7 @@ public class WebServerTest {
             "\"y\": [2, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40]\n" +
             "}";
     private int port = 8080;
+    private JsonObject readingWithId;
 
     @Before
     public void setup(TestContext ctx) {
@@ -30,6 +33,9 @@ public class WebServerTest {
         DeploymentOptions opts = new DeploymentOptions()
                 .setConfig(new JsonObject().put("http.port", port));
         vertx.deployVerticle(WebServer.class.getName(), opts, ctx.asyncAssertSuccess());
+        readingWithId = new JsonObject(reading);
+        UUID id = UUID.randomUUID();
+        readingWithId.put("id", id.toString());
     }
 
     @After
@@ -55,6 +61,28 @@ public class WebServerTest {
                     });
                 })
                 .write(reading)
+                .end();
+    }
+
+    @Test
+    public void testPostReadingWithId(TestContext ctx) {
+        final Async async = ctx.async();
+        String data = readingWithId.toString();
+        vertx.createHttpClient().post(port, "localhost", "/users/1234/readings")
+                .putHeader("content-type", "application/json")
+                .putHeader("content-length", data.length()+"")
+                .handler(resp -> {
+                    ctx.assertEquals(resp.statusCode(), 200);
+                    ctx.assertTrue(resp.headers().get("content-type").contains("application/json"));
+                    resp.bodyHandler(body -> {
+                        JsonObject json = new JsonObject(body.toString());
+                        ctx.assertEquals(json.getString("id"), readingWithId.getString("id"));
+                        ctx.assertTrue(json.containsKey("x"));
+                        ctx.assertTrue(json.containsKey("y"));
+                        async.complete();
+                    });
+                })
+                .write(data)
                 .end();
     }
 
