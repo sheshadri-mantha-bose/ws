@@ -2,6 +2,7 @@ package com.bose.experiment.web;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -89,10 +90,14 @@ public class WebServerTest {
     @Test
     public void testGetAllReadings(TestContext ctx) {
         final Async async = ctx.async();
-        vertx.createHttpClient().getNow(port, "localhost", "/users/1234/readings", resp -> {
-           resp.handler(body -> {
+        HttpClient client = vertx.createHttpClient();
+        client.getNow(port, "localhost", "/users/1234/readings", resp -> {
+            ctx.assertEquals(resp.statusCode(), 200);
+            ctx.assertTrue(resp.headers().get("content-type").contains("application/json"));
+           resp.bodyHandler(body -> {
                JsonObject json = new JsonObject(body.toString());
                System.out.println(json.encodePrettily().toString());
+               client.close();
                async.complete();
            });
         });

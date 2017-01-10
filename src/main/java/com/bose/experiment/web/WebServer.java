@@ -54,7 +54,11 @@ public class WebServer extends AbstractVerticle {
     }
 
     private void getReadings(RoutingContext ctx) {
-        ctx.response().end(Json.encodePrettily(readings.values()));
+        String answer = Json.encodePrettily(readings.values());
+        System.out.println("Server GET readings:" + answer);
+        ctx.response()
+                .putHeader("content-type", "application/json")
+                .end(answer);
     }
 
     private void addReading(RoutingContext ctx) {
