@@ -54,7 +54,7 @@ public class WebServerTest {
                     ctx.assertEquals(resp.statusCode(), 200);
                     ctx.assertTrue(resp.headers().get("content-type").contains("application/json"));
                     resp.bodyHandler(body -> {
-                        JsonObject json = new JsonObject(body.toString());
+                        JsonObject json = body.toJsonObject();
                         ctx.assertTrue(json.containsKey("id"));
                         ctx.assertTrue(json.containsKey("x"));
                         ctx.assertTrue(json.containsKey("y"));
@@ -76,7 +76,7 @@ public class WebServerTest {
                     ctx.assertEquals(resp.statusCode(), 200);
                     ctx.assertTrue(resp.headers().get("content-type").contains("application/json"));
                     resp.bodyHandler(body -> {
-                        JsonObject json = new JsonObject(body.toString());
+                        JsonObject json = body.toJsonObject();
                         ctx.assertEquals(json.getString("id"), readingWithId.getString("id"));
                         ctx.assertTrue(json.containsKey("x"));
                         ctx.assertTrue(json.containsKey("y"));
